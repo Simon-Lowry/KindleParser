@@ -29,3 +29,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### app properties file ###
+parser/parser/src/main/resources/application.properties
