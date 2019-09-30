@@ -7,24 +7,28 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kindleparser.parser.servicesInterfaces.IHLParser;
+import com.kindleparser.parser.servicesInterfaces.IHLFileCopier;
 
+
+/**
+ *
+ * This controller is used for testing purposes. Eventually will be replaced by a windows service 
+ * automatically running this code.
+ *
+ */
 @RestController
-@RequestMapping("/parser/")
-public class ParserController {
+@RequestMapping("/service/")
+public class HLServiceController {
 	private static Logger log = LogManager.getLogger(ParserController.class.getName());
 	
 	@Autowired
-	private IHLParser hlParserService;
+	private IHLFileCopier hlFileCopierService;
 	
+	
+	@GetMapping
+	public void performServiceWork() {
+		
+		hlFileCopierService.isKindleConnected();
+	}
 
-	@GetMapping("fullParse")
-	public void parseFullHLFile() {	
-		log.info("Attempting to parse Highlight file.....");
-		hlParserService.parseFullHLFile();
-		log.info("File parsing has been successful.");
-	}	
-	
 }
-	
-

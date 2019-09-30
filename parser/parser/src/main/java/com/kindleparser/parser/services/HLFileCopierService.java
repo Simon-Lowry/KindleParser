@@ -2,8 +2,13 @@ package com.kindleparser.parser.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -38,11 +43,12 @@ public class HLFileCopierService implements IHLFileCopier {
 			log.info("Checking to see if kindle is connected");
 			if (kindleFile1.exists() && kindleFile2.exists() && kindleFile3.exists() && kindleFile4.exists() ) {
 				
-				log.info("Kindle is connected.");
-				return true;
-			} else {
-				log.info("Kindle is not connected.");
-			}
+				// Authenticate the device using md5 checksum
+				if (isMyKindleDevice()) {
+					log.info("Device has been authenticated as correct kindle device");
+					return true;
+				}
+			} 
 			
 			try {
 			Thread.sleep(1000);
@@ -51,6 +57,32 @@ public class HLFileCopierService implements IHLFileCopier {
 				return false;
 			}
 		}
+	}
+	
+	
+	/**
+	 * Authenticate the device is my kindle by checking the md5 of the authentication file
+	 * on the device against the expected md5.
+	 * 
+	 * @return true if it is the same md5 as expected.
+	 */
+	protected boolean isMyKindleDevice() {
+		
+		try {
+			
+			byte[] b = Files.readAllBytes(Paths.get(env.getProperty("kindle.binaryLocation")));
+			byte[] hash = MessageDigest.getInstance("MD5").digest(b);
+			
+			log.info("Attempting to authenticate device as my kindle device");
+			String actual = DatatypeConverter.printHexBinary(hash);
+			
+			return actual.equals(env.getProperty("kindle.authFileMD5Value"));	
+			
+		} catch (Exception ex) {
+			System.out.println("Exception occurred: " + ex.getMessage());
+		}
+		
+		return true;
 	}
 	
 	
