@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-
 import com.kindleparser.parser.servicesInterfaces.IHLFileCopier;
 
 
@@ -28,7 +27,10 @@ public class HLFileCopierService implements IHLFileCopier {
 	Environment env;
 	
 	/**
-	 * <p>Checks to see if my kindle is connected to the local device based on certain files contained on the kindle</p>
+	 * <p>
+	 * Checks to see if my kindle is connected to the local device and 
+	 * performs authentication to ensure it is my kindle connected.
+	 * </p>
 	 * 
 	 * @return true if the kindle is confirmed to be connected.
 	 */
@@ -62,11 +64,12 @@ public class HLFileCopierService implements IHLFileCopier {
 	
 	/**
 	 * Authenticate the device is my kindle by checking the md5 of the authentication file
-	 * on the device against the expected md5.
+	 * against the expected md5.
 	 * 
 	 * @return true if it is the same md5 as expected.
 	 */
 	protected boolean isMyKindleDevice() {
+		String hexOfFileHash = "";
 		
 		try {
 			
@@ -74,15 +77,13 @@ public class HLFileCopierService implements IHLFileCopier {
 			byte[] hash = MessageDigest.getInstance("MD5").digest(b);
 			
 			log.info("Attempting to authenticate device as my kindle device");
-			String actual = DatatypeConverter.printHexBinary(hash);
-			
-			return actual.equals(env.getProperty("kindle.authFileMD5Value"));	
+			hexOfFileHash = DatatypeConverter.printHexBinary(hash);
 			
 		} catch (Exception ex) {
 			System.out.println("Exception occurred: " + ex.getMessage());
 		}
 		
-		return true;
+		return hexOfFileHash.equals(env.getProperty("kindle.authFileMD5Value"));	// check md5 of file vs md5 in properties file
 	}
 	
 	

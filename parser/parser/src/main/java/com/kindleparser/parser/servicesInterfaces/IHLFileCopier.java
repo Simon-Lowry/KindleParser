@@ -4,15 +4,15 @@ package com.kindleparser.parser.servicesInterfaces;
 /**
  * <p>
  * 	A windows service which periodically checks to see if my kindle device is connected. 
- *  When the device is connected it will copy the highlight file from the kindle onto 
- *  my local machine.
+ *  It performs authentication to ensure it is my kindle device connected and then
+ *  it will copy the highlight file from the kindle onto my local machine for later parsing.
  * </p>
  * 
  */
 public interface IHLFileCopier {
 	
 	/**
-	 * <p>Checks to see if kindle is connected to the laptop</p>
+	 * <p>Checks to see if my kindle is connected to the laptop</p>
 	 * @return true if connected, false otherwise
 	 */
 	public boolean isKindleConnected();
