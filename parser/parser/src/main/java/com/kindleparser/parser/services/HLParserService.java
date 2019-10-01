@@ -69,7 +69,7 @@ public class HLParserService implements IHLParser {
 	 * 
 	 * @return the location of the most recent highlight file copied to the local system.
 	 */
-	public String findNewestHLFile() {
+	private String findNewestHLFile() {
 		String directoryPath = env.getProperty("local.HLFileLocation");
 		File HLFileDirectory = new File(directoryPath);
 		File[] filesInDirectory = HLFileDirectory.listFiles();
@@ -86,7 +86,7 @@ public class HLParserService implements IHLParser {
 	 * </p>
 	 * @return true if highlights were successfully mapped.
 	 */
-	protected boolean ingestAllHighlights() {
+	private boolean ingestAllHighlights() {
 		HighlightsDO bookHighlights = null;
 		
 		while (in.hasNextLine()) {
@@ -120,14 +120,14 @@ public class HLParserService implements IHLParser {
 	 * </p>
 	 * @return - String - returns a single highlight's contents as a string.
 	 */
-	public boolean writeLastHighlightToFile(HighlightsDO lastHighlight) {
+	private boolean writeLastHighlightToFile(HighlightsDO lastHighlight) {
 		try {
 			PrintStream ps = new PrintStream(env.getProperty("local.lastHLFile"));
 			ps.print(lastBookHighlights.getBookTitle());
 			ps.print(lastBookHighlights.getAuthor());
 			ps.print(lastBookHighlights.getAuthor());
 		} catch(IOException ex) {
-			
+			log.error("Error Writing to last highlight file: " + ex);
 		}
 		
 		//TODO: write the last highlight file to a text file which is to be read only
@@ -141,7 +141,7 @@ public class HLParserService implements IHLParser {
 	 * 
 	 * @return - String - returns a single highlight's contents as a string.
 	 */
-	protected String getHighlightContent() {
+	private String getHighlightContent() {
 		String highlightContents = "";
 		
 		while (true ) { 
@@ -170,7 +170,7 @@ public class HLParserService implements IHLParser {
 	 * @param highlightsMap - contains all of the highlights including book title and author
 	 * @return true to confirm the action was completed
 	 */
-	protected boolean formatBookTitleAndAuthor() {
+	private boolean formatBookTitleAndAuthor() {
 		
 		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
 			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
@@ -197,7 +197,7 @@ public class HLParserService implements IHLParser {
 	 * @param highlightsMap
 	 * @return returns true if the formatting was successful.
 	 */
-	protected boolean formatHighlights() {
+	private boolean formatHighlights() {
 		
 		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
 			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();

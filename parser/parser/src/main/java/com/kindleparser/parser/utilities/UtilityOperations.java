@@ -44,11 +44,9 @@ public class UtilityOperations {
 		
 		List<String> highlights = bookHighlightsDO.getBookHighlights();
 		
-		/*
-		 * for (int i = 0; i < highlights.size(); i++ ) { log.info(highlights.get(i) +
-		 * "\n"); }
-		 */
-		log.info(highlights.get(highlights.size() - 1) + "\n");
+		for (int i = 0; i < highlights.size(); i++ ) {
+			log.info(highlights.get(i) + "\n");
+		}
 		return true;	
 	}
 	

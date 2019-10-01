@@ -68,7 +68,7 @@ public class HLFileCopierService implements IHLFileCopier {
 	 * 
 	 * @return true if it is the same md5 as expected.
 	 */
-	protected boolean isMyKindleDevice() {
+	private boolean isMyKindleDevice() {
 		String hexOfFileHash = "";
 		
 		try {
