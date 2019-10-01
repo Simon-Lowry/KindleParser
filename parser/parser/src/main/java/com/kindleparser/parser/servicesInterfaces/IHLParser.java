@@ -19,4 +19,16 @@ public interface IHLParser {
 	 * @return true if this parsing was successful.
 	 */
 	public boolean parseFullHLFile();
+	
+	
+	/**
+	 * <p>
+	 *  Takes in only the new highlights from the highlight file if any exist
+	 *  to be stored in the DB. Formatted and then entered into the db.
+	 * </p>
+	 * 
+	 * @return  true if this parsing was successful.
+	 */
+	public boolean parseNewHLsfromHLFile();
+	
 }

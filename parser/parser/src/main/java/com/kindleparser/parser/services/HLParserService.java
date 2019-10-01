@@ -3,6 +3,7 @@ package com.kindleparser.parser.services;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.kindleparser.parser.entities.Highlight;
 import com.kindleparser.parser.models.HighlightsDO;
 import com.kindleparser.parser.servicesInterfaces.IHLParser;
 import com.kindleparser.parser.utilities.UtilityOperations;
@@ -30,6 +32,7 @@ public class HLParserService implements IHLParser {
 	@Autowired
 	private UtilityOperations utilityOps;
 	private HashMap<String, HighlightsDO> bookHighlightsMap;
+	private HighlightsDO lastBookHighlights;
 	
 	
 	/**
@@ -49,7 +52,8 @@ public class HLParserService implements IHLParser {
 			in = new Scanner(new FileReader(highlightFile));
 			ingestAllHighlights();
 			formatHighlights();
-			utilityOps.displayNHighlights(bookHighlightsMap, 2);
+	//		utilityOps.displayNHighlights(bookHighlightsMap, 2);
+	//		utilityOps.displaySingleBookHighlights(lastBookHighlights);
 		} catch (IOException ex) {
 			log.error("Error occured attempting to read from the highlights file: " + ex);
 			return false;
@@ -82,24 +86,26 @@ public class HLParserService implements IHLParser {
 	 * </p>
 	 * @return true if highlights were successfully mapped.
 	 */
-	public boolean ingestAllHighlights() {
+	protected boolean ingestAllHighlights() {
+		HighlightsDO bookHighlights = null;
 		
 		while (in.hasNextLine()) {
 			String bookTitleAndAuthor = in.nextLine();
 			String highlightContents = getHighlightContent();
 			
 			if (bookHighlightsMap.containsKey(bookTitleAndAuthor)) {					// if book already added to the map
-				HighlightsDO bookHighlights = bookHighlightsMap.get(bookTitleAndAuthor);
+				bookHighlights = bookHighlightsMap.get(bookTitleAndAuthor);
 				List<String> highlights = bookHighlights.getBookHighlights();
 				highlights.add(highlightContents);
 			} else {
-				HighlightsDO bookHighlights = new HighlightsDO(bookTitleAndAuthor);
+			    bookHighlights = new HighlightsDO(bookTitleAndAuthor);
 				List<String> highlights = bookHighlights.getBookHighlights();
 				highlights.add(highlightContents);
 				bookHighlightsMap.put(bookTitleAndAuthor, bookHighlights);
 			}
 			
 		}
+		lastBookHighlights = bookHighlights;
 		
 		log.info("Successfully ingested highlights, book titles, and authors from highlight file. Number of highlight objects: " + bookHighlightsMap.size() );
 		in.close();
@@ -115,6 +121,14 @@ public class HLParserService implements IHLParser {
 	 * @return - String - returns a single highlight's contents as a string.
 	 */
 	public boolean writeLastHighlightToFile(HighlightsDO lastHighlight) {
+		try {
+			PrintStream ps = new PrintStream(env.getProperty("local.lastHLFile"));
+			ps.print(lastBookHighlights.getBookTitle());
+			ps.print(lastBookHighlights.getAuthor());
+			ps.print(lastBookHighlights.getAuthor());
+		} catch(IOException ex) {
+			
+		}
 		
 		//TODO: write the last highlight file to a text file which is to be read only
 		return true;
@@ -201,6 +215,18 @@ public class HLParserService implements IHLParser {
 		return true;
 		
 	}
+	
+	
+	public boolean parseNewHLsfromHLFile() {
+		//TODO: 
+		// get last highlight from last highlight file
+		// use this highlight as a marker to find out where to start taking the new highlights from in the highlight file.
+		// go through the highlight file find the last highlight, start taking from beyond that.
+		// use same code from ingesting the other higlights
+		return true;
+	}
+	
+	
 	
 	
 }

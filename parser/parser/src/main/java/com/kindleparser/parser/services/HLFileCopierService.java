@@ -102,7 +102,8 @@ public class HLFileCopierService implements IHLFileCopier {
 		try {
 			log.info("Attempting to copy highlights file and create copied file");
 			FileUtils.copyFile(currentHLFile, copiedHLFile);
-			copiedHLFile.setReadOnly(); 		// need to check if this works.
+			copiedHLFile.setReadOnly();
+			
 			log.info("Copied highlight file from kindle to project folder for parsing and storage.");
 		} catch(IOException ex) {
 			log.error("Unable to copy file: " + ex);
@@ -133,7 +134,6 @@ public class HLFileCopierService implements IHLFileCopier {
 			log.info("Deleted file: " + filesInDirectory[numFilesInDir].getName() + " to make space for new HL file");
 		}
 		
-		// add new file here
 		copyHLFile(numFilesInDir);
 		return true;
 	}
