@@ -245,13 +245,11 @@ public class HLParserService implements IHLParser {
 	}
 
 	
-	/*
-	 * public String[] separateAuthorsByColon (String authors) {
-	 * 
-	 * }
-	 * 
-	 * 
-	 */
+	
+	public String[] separateAuthorsByColon (String authors) {
+		return null;
+	}
+
 	/**
 	 * <p>
 	 * Highlights appear in with additional metadata not required for this application.
