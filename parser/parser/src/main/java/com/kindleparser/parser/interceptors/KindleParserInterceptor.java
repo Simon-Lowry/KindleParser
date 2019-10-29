@@ -18,9 +18,6 @@ import com.kindleparser.parser.services.HLFileCopierService;
 
 /**
  * 
- * <p>
- * This interceptor ensures that the application only accepts requests from my host system.
- * </p>
  *
  */
 @Component
@@ -29,35 +26,10 @@ public class KindleParserInterceptor implements HandlerInterceptor {
 	
 	@Autowired
 	Environment env;
-	
-	//TODO: interceptor ensures code is only run on host system.
+		
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-		log.info("Request launched");
-		
-		while (networkInterfaces.hasMoreElements()) {
-			NetworkInterface networkInterface = networkInterfaces.nextElement();
-			byte[] macAddressBytes = networkInterface.getHardwareAddress();
-			
-			if (macAddressBytes != null) {
-				String macAddress = "";
-			    
-				for (byte b : macAddressBytes) {
-					if (macAddress.length() > 1) {
-						macAddress += '-';
-					} 
-					macAddress += String.format("%02x", b);
-			    }
-			
-			   if (macAddress.toUpperCase().equals(env.getProperty("local.macAddress"))) {
-				   log.info("Valid request");
-				   return true;
-			   }
-			 
-			}
-		}
-        return false;
+        return true;
 	}
 	
 }

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -52,8 +53,13 @@ public class HLParserService implements IHLParser {
 			in = new Scanner(new FileReader(highlightFile));
 			ingestAllHighlights();
 			formatHighlights();
+			formatBookTitleAndAuthor();
 	//		utilityOps.displayNHighlights(bookHighlightsMap, 2);
-	//		utilityOps.displaySingleBookHighlights(lastBookHighlights);
+		//	utilityOps.displaySingleBookHighlights(lastBookHighlights);
+			
+	//		utilityOps.displayAllAuthorsNTitles(bookHighlightsMap);
+		//	writeLastHighlightToFile(lastBookHighlights);
+
 		} catch (IOException ex) {
 			log.error("Error occured attempting to read from the highlights file: " + ex);
 			return false;
@@ -123,9 +129,9 @@ public class HLParserService implements IHLParser {
 	private boolean writeLastHighlightToFile(HighlightsDO lastHighlight) {
 		try {
 			PrintStream ps = new PrintStream(env.getProperty("local.lastHLFile"));
-			ps.print(lastBookHighlights.getBookTitle());
-			ps.print(lastBookHighlights.getAuthor());
-			ps.print(lastBookHighlights.getAuthor());
+			ps.println(lastBookHighlights.getBookTitle());
+			ps.println(lastBookHighlights.getAuthor());
+			ps.println(lastBookHighlights.getBookHighlights());
 		} catch(IOException ex) {
 			log.error("Error Writing to last highlight file: " + ex);
 		}
@@ -144,12 +150,13 @@ public class HLParserService implements IHLParser {
 	private String getHighlightContent() {
 		String highlightContents = "";
 		
-		while (true ) { 
+		while (true) { 
 			
-			if (in.hasNextLine() == false) break;	
+			if (in.hasNextLine() == false)  // end of file
+				break;	
 		
 			String nextLine = in.nextLine();
-			if (nextLine.equals("=========="))  {
+			if (nextLine.equals("=========="))  {	// end of a highlight is denoted by ==========
 				break; 
 			} else {
 				highlightContents += nextLine;
@@ -172,22 +179,79 @@ public class HLParserService implements IHLParser {
 	 */
 	private boolean formatBookTitleAndAuthor() {
 		
-		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
-			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
-						
-				
-			for (int i = 0; i < bookHighlights.size(); i++) {
-				String highlight = bookHighlights.get(i);
+		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {	
+			String authorAndTitle = entry.getKey();
+			HighlightsDO highlightsDO = entry.getValue();
 			
-				//TODO: format titles and author for 6 different variations
-			}
+			int indexOfOpenBracket = authorAndTitle.indexOf('('); // open bracket precedes the book authors
+			
+			String bookTitle = (indexOfOpenBracket == -1) ?  authorAndTitle : authorAndTitle.substring(0, indexOfOpenBracket - 1);
+		//	log.info("Book title: " + bookTitle);
+				
+			String[] authors = getAuthors(authorAndTitle, indexOfOpenBracket);
+			
+			highlightsDO.setBookTitle(authorAndTitle);
+			highlightsDO.setAuthor(authors);
 		}
 		
 		log.info("Book titles and Authors have been formatted in highlight object map");	
 		return true;
 	}
+	
+	
+	public String[] getAuthors(String authorAndTitle, int indexOfOpenBracket) {
+		String[] authors;
+		String authorsPreFormat = "";
+		
+		if (indexOfOpenBracket == -1 ) return null;
+		
+		int indexOfCloseBracket = authorAndTitle.indexOf(')');
+		
 
+		authorsPreFormat = authorAndTitle.substring(indexOfOpenBracket + 1, indexOfCloseBracket );
+		log.info("Authors: " + authorsPreFormat);
+		int numCommas = (int) authorsPreFormat.chars().filter(ch -> ch == ',').count();
+		int numSemiColons = (int) authorsPreFormat.chars().filter(ch -> ch == ';').count();
+			
+		if (numSemiColons > 0 || numCommas > 1 ) { // semi-colon or multiple commas is an indicator of 
+				
+			log.info("Num colons: " + numCommas + " num semicolons: " + numSemiColons);
+				
+			if (numSemiColons > 1) {
+				authors = authorsPreFormat.split(";");
+				for (String str : authors) {
+					log.info(str);
+				}
+			} else {
+				int count = 0;
+					
+					
+			}
+				
+		}
+		// check for multiple authrors with semi-colon separator, 
+			// if multiple authors with semi-colon separator
+					// determine number of authors by count of semi-colon operator
+					// loop n times and add the author
+			
+			// else // multiple colons 
+			// separate at every second colon + 2
+			// for every author in authors list
+				// check if
+		
+		
+		
+		return null;
+	}
 
+	
+	/*
+	 * public String[] separateAuthorsByColon (String authors) {
+	 * 
+	 * }
+	 * 
+	 * 
+	 */
 	/**
 	 * <p>
 	 * Highlights appear in with additional metadata not required for this application.
@@ -220,6 +284,17 @@ public class HLParserService implements IHLParser {
 	public boolean parseNewHLsfromHLFile() {
 		//TODO: 
 		// get last highlight from last highlight file
+		try {
+			in = new Scanner(new FileReader(env.getProperty("local.lastHLFile")));
+		
+		} catch(IOException ex) {
+			log.error("Exception occured attempting to read from last highlight file: " + ex);
+		}
+		
+		// set location of scanner to the last highlight
+		while (in.hasNextLine()) {
+			
+		}
 		// use this highlight as a marker to find out where to start taking the new highlights from in the highlight file.
 		// go through the highlight file find the last highlight, start taking from beyond that.
 		// use same code from ingesting the other higlights
@@ -227,6 +302,21 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
-	
+	public boolean addHighlightsToDB() {
+		// TODO:
+		// iterate through the hashmap
+		// add author if not already in the table.
+		// add book if not already in the table
+		// inner loop for going through each highlight and adding it to the table.
+		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
+			HighlightsDO highlightsDO = entry.getValue();
+			String[] author = highlightsDO.getAuthor();
+			String bookTitle = highlightsDO.getBookTitle();
+			
+			
+		}
+
+		return true;
+	}
 	
 }

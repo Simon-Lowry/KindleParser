@@ -17,6 +17,7 @@ public interface IHLFileCopier {
 	 */
 	public boolean isKindleConnected();
 
+	
 	/**
 	 * 
 	 * @param numFiles - the number of files currently in the Highlight file directory
@@ -24,9 +25,13 @@ public interface IHLFileCopier {
 	 */
 	public boolean copyHLFile(int numFiles);
 	
+	
 	/**
-	 * 
-	 * @return
+	 * <p>
+	 * HLFileDirectory contains the kindle highlight file as well up to four of the most recent versions
+	 * of the file as backup. When a fifth file is added to the directory, the oldest backup will be deleted
+	 * </p>
+	 * @return - true - directory has been successfully updated
 	 */
 	public boolean updateHLFileDirectory();
 	

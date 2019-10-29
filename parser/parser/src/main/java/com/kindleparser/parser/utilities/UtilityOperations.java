@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,6 +49,21 @@ public class UtilityOperations {
 			log.info(highlights.get(i) + "\n");
 		}
 		return true;	
+	}
+	
+	
+	public boolean displayAllAuthorsNTitles(HashMap<String, HighlightsDO> highlightsMap) {
+		
+		
+		for (Map.Entry<String, HighlightsDO> entry : highlightsMap.entrySet()) {
+			HighlightsDO highlight = entry.getValue();
+			
+			log.info("Book title: " + highlight.getAuthor());
+			log.info("Author: " + highlight.getAuthor());
+		}
+		
+		return true;
+		
 	}
 	
 	
