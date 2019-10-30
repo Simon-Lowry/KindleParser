@@ -14,6 +14,10 @@ public class Author {
 	private Long authorId;
 	private String authorName;
 	
+	public Author(String authorName) {
+		this.authorName = authorName;
+	}
+	
 	public Long getAuthorId() {
 		return authorId;
 	}

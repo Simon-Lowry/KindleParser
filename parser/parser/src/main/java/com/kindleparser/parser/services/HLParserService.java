@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,8 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import com.kindleparser.parser.entities.Highlight;
+import com.kindleparser.parser.dao.interfaces.IDAOOperations;
+import com.kindleparser.parser.entities.Author;
+import com.kindleparser.parser.entities.Book;
 import com.kindleparser.parser.models.HighlightsDO;
+import com.kindleparser.parser.servicesInterfaces.IHLFormatter;
 import com.kindleparser.parser.servicesInterfaces.IHLParser;
 import com.kindleparser.parser.utilities.UtilityOperations;
 
@@ -34,6 +38,7 @@ public class HLParserService implements IHLParser {
 	private UtilityOperations utilityOps;
 	private HashMap<String, HighlightsDO> bookHighlightsMap;
 	private HighlightsDO lastBookHighlights;
+	private IDAOOperations daoOperations;
 	
 	
 	/**
@@ -45,27 +50,22 @@ public class HLParserService implements IHLParser {
 	 * 
 	 * @return true if this parsing was successful.
 	 */
-	public boolean parseFullHLFile() {
+	public HashMap <String, HighlightsDO> parseFullHLFile() {
 		bookHighlightsMap = new HashMap <String, HighlightsDO>();
 		String highlightFile = findNewestHLFile();
 		
 		try {
 			in = new Scanner(new FileReader(highlightFile));
 			ingestAllHighlights();
-			formatHighlights();
-			formatBookTitleAndAuthor();
-	//		utilityOps.displayNHighlights(bookHighlightsMap, 2);
-		//	utilityOps.displaySingleBookHighlights(lastBookHighlights);
-			
-	//		utilityOps.displayAllAuthorsNTitles(bookHighlightsMap);
+		//	addHighlightsToDB();
 		//	writeLastHighlightToFile(lastBookHighlights);
 
 		} catch (IOException ex) {
 			log.error("Error occured attempting to read from the highlights file: " + ex);
-			return false;
+			
 		}
 		
-		return true;
+		return bookHighlightsMap;
 	}
 	
 	
@@ -140,6 +140,7 @@ public class HLParserService implements IHLParser {
 		return true;
 	}
 	
+	
 	/**
 	 * <p>
 	 * Get's a single highlight's contents from the text file.
@@ -167,119 +168,7 @@ public class HLParserService implements IHLParser {
 	}
 
 	
-	/**
-	 * <p>
-	 * Authors appear in 6 different variations in the highlight file.
-	 * This method formats both the book title and author into a palatable
-	 * format for the DB.
-	 *  </p>
-	 *  
-	 * @param highlightsMap - contains all of the highlights including book title and author
-	 * @return true to confirm the action was completed
-	 */
-	private boolean formatBookTitleAndAuthor() {
-		
-		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {	
-			String authorAndTitle = entry.getKey();
-			HighlightsDO highlightsDO = entry.getValue();
-			
-			int indexOfOpenBracket = authorAndTitle.indexOf('('); // open bracket precedes the book authors
-			
-			String bookTitle = (indexOfOpenBracket == -1) ?  authorAndTitle : authorAndTitle.substring(0, indexOfOpenBracket - 1);
-		//	log.info("Book title: " + bookTitle);
-				
-			String[] authors = getAuthors(authorAndTitle, indexOfOpenBracket);
-			
-			highlightsDO.setBookTitle(authorAndTitle);
-			highlightsDO.setAuthor(authors);
-		}
-		
-		log.info("Book titles and Authors have been formatted in highlight object map");	
-		return true;
-	}
-	
-	
-	public String[] getAuthors(String authorAndTitle, int indexOfOpenBracket) {
-		String[] authors;
-		String authorsPreFormat = "";
-		
-		if (indexOfOpenBracket == -1 ) return null;
-		
-		int indexOfCloseBracket = authorAndTitle.indexOf(')');
-		
-
-		authorsPreFormat = authorAndTitle.substring(indexOfOpenBracket + 1, indexOfCloseBracket );
-		log.info("Authors: " + authorsPreFormat);
-		int numCommas = (int) authorsPreFormat.chars().filter(ch -> ch == ',').count();
-		int numSemiColons = (int) authorsPreFormat.chars().filter(ch -> ch == ';').count();
-			
-		if (numSemiColons > 0 || numCommas > 1 ) { // semi-colon or multiple commas is an indicator of 
-				
-			log.info("Num colons: " + numCommas + " num semicolons: " + numSemiColons);
-				
-			if (numSemiColons > 1) {
-				authors = authorsPreFormat.split(";");
-				for (String str : authors) {
-					log.info(str);
-				}
-			} else {
-				int count = 0;
-					
-					
-			}
-				
-		}
-		// check for multiple authrors with semi-colon separator, 
-			// if multiple authors with semi-colon separator
-					// determine number of authors by count of semi-colon operator
-					// loop n times and add the author
-			
-			// else // multiple colons 
-			// separate at every second colon + 2
-			// for every author in authors list
-				// check if
-		
-		
-		
-		return null;
-	}
-
-	
-	
-	public String[] separateAuthorsByColon (String authors) {
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Highlights appear in with additional metadata not required for this application.
-	 * This method strips that metadata leaving only the highlight contents.
-	 * </p>
-	 * 
-	 * @param highlightsMap
-	 * @return returns true if the formatting was successful.
-	 */
-	private boolean formatHighlights() {
-		
-		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
-			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
-									
-			for (int i = 0; i < bookHighlights.size(); i++) {
-				String highlight = bookHighlights.get(i);
-				int indexOfColon = highlight.indexOf(":", highlight.indexOf(":") + 1); // gets the index of the second semi colon
-					
-				highlight = highlight.substring(indexOfColon + 3);
-				bookHighlights.set(i, highlight);
-			}
-		}
-		
-		log.info("Highlights have been formatted, metadata removed.");
-		return true;
-		
-	}
-	
-	
-	public boolean parseNewHLsfromHLFile() {
+	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile() {
 		//TODO: 
 		// get last highlight from last highlight file
 		try {
@@ -296,7 +185,7 @@ public class HLParserService implements IHLParser {
 		// use this highlight as a marker to find out where to start taking the new highlights from in the highlight file.
 		// go through the highlight file find the last highlight, start taking from beyond that.
 		// use same code from ingesting the other higlights
-		return true;
+		return null;
 	}
 	
 	
@@ -308,13 +197,67 @@ public class HLParserService implements IHLParser {
 		// inner loop for going through each highlight and adding it to the table.
 		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
 			HighlightsDO highlightsDO = entry.getValue();
-			String[] author = highlightsDO.getAuthor();
+			String[] authors = highlightsDO.getAuthor();
 			String bookTitle = highlightsDO.getBookTitle();
 			
-			
+			saveAuthorsToDB(authors);
+		//	saveBookToDB(authors, bookTitle);
 		}
 
 		return true;
 	}
+	
+	
+	private boolean saveAuthorsToDB(String[] authors) {
+		
+		for (int i = 0; i < authors.length; i++) {
+			String authorName = authors[i];
+			
+			if (!daoOperations.doesAuthorExist(authorName)) {
+				log.info("Author not currently entered into the DB. Attempting to save author " + authorName + " to DB");
+				Author author = new Author(authorName);
+				daoOperations.saveAuthorToDB(author);
+			//	log.info("Successfully saved author " + authorName + " to DB");
+			} else {
+				log.info("Failed saving author " + authorName + " to DB. Author already exists in the DB.");
+			}
+		}
+		
+		return true;
+	}
+	
+	
+	private boolean saveBookToDB(String[] authors, String bookTitle) {
+		int numAuthors = authors.length;
+		Long author1;
+		Long author2;
+		Long author3;
+		Book book = null;
+		
+		if (authors == null || authors.length == 0)
+			return false;
+		
+		switch(numAuthors) {
+			case 1:
+				author1 = daoOperations.getAuthorID(authors[0]);
+				book = new Book(bookTitle, author1);
+				break;
+			case 2: 
+				author1 = daoOperations.getAuthorID(authors[0]);
+			    author2 = daoOperations.getAuthorID(authors[1]);
+			    book = new Book(bookTitle, author1, author2);
+				break;
+			default: 	// for three or more authors
+				author1 = daoOperations.getAuthorID(authors[0]);
+				author2 = daoOperations.getAuthorID(authors[1]);
+				author3 = daoOperations.getAuthorID(authors[2]);
+				book = new Book(bookTitle, author1, author2, author3);
+				break;
+		}
+		
+		daoOperations.saveBookToDB(book);
+		return true;
+	}
+	
 	
 }

@@ -1,5 +1,8 @@
 package com.kindleparser.parser.servicesInterfaces;
 
+import java.util.HashMap;
+
+import com.kindleparser.parser.models.HighlightsDO;
 
 /**
  * <p>
@@ -16,9 +19,9 @@ public interface IHLParser {
 	 * the database.
 	 * </p>
 	 * 
-	 * @return true if this parsing was successful.
+	 * @return hashmap with the results
 	 */
-	public boolean parseFullHLFile();
+	public  HashMap<String, HighlightsDO> parseFullHLFile();
 	
 	
 	/**
@@ -27,8 +30,8 @@ public interface IHLParser {
 	 *  to be stored in the DB. Formatted and then entered into the db.
 	 * </p>
 	 * 
-	 * @return  true if this parsing was successful.
+	 * @return  hashmap with the results
 	 */
-	public boolean parseNewHLsfromHLFile();
+	public  HashMap<String, HighlightsDO> parseNewHLsfromHLFile();
 	
 }

@@ -19,7 +19,7 @@ import com.kindleparser.parser.servicesInterfaces.IHLFileCopier;
 @RestController
 @RequestMapping("/service/")
 public class HLServiceController {
-	private static Logger log = LogManager.getLogger(ParserController.class.getName());
+	private static Logger log = LogManager.getLogger(HLServiceController.class.getName());
 	
 	@Autowired
 	private IHLFileCopier hlFileCopierService;

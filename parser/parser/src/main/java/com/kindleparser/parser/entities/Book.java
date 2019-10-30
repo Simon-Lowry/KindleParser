@@ -18,6 +18,32 @@ public class Book {
 	private Long authorId2;
 	private Long authorId3;
 	
+	
+	public Book(String bookTitle) {
+		this.bookTitle = bookTitle;
+	}
+	
+	
+	public Book(String bookTitle, Long authorId1) {
+		this.bookTitle = bookTitle;
+		this.authorId1 = authorId1;
+	}
+	
+	
+	public Book(String bookTitle, Long authorId1, Long authorId2) {
+		this.bookTitle = bookTitle;
+		this.authorId1 = authorId1;
+		this.authorId2 = authorId2;
+	}
+	
+	
+	public Book(String bookTitle, Long authorId1, Long authorId2, Long authorId3 ) {
+		this.bookTitle = bookTitle;
+		this.authorId1 = authorId1;
+		this.authorId2 = authorId2;
+		this.authorId3 = authorId3;
+	}
+	
 	@Column(name = "bookId", nullable = false)
 	public Long getBookId() {
 		return bookId;
