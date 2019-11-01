@@ -201,7 +201,6 @@ public class HLParserService implements IHLParser {
 			String bookTitle = highlightsDO.getBookTitle();
 			
 			saveAuthorsToDB(authors);
-		//	saveBookToDB(authors, bookTitle);
 		}
 
 		return true;
