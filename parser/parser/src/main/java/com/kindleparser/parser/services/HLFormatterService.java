@@ -18,7 +18,6 @@ public class HLFormatterService implements IHLFormatter {
 	
 	private HashMap<String, HighlightsDO> bookHighlightsMap;
 	
-	
 	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap) {
 		this.bookHighlightsMap = bookHighlightsMap;
 		formatHighlights();
@@ -58,7 +57,7 @@ public class HLFormatterService implements IHLFormatter {
 	}
 	
 	
-	public String[] formatAuthors(String authorAndTitle, int indexOfOpenBracket) {
+	private String[] formatAuthors(String authorAndTitle, int indexOfOpenBracket) {
 		String[] authors = null;
 		if (indexOfOpenBracket == -1 ) 
 			return null;
@@ -95,7 +94,7 @@ public class HLFormatterService implements IHLFormatter {
 	 * @param authorsPreFormat
 	 * @return array of authors
 	 */
-	public String[] separateAuthorsByColon (String authorsPreFormat) {
+	private String[] separateAuthorsByColon (String authorsPreFormat) {
 		int commaCount = 0;
 		int nameStartIndex = 0;
 		
@@ -132,7 +131,7 @@ public class HLFormatterService implements IHLFormatter {
 	 * 
 	 * @return returns the author's names in the correct format in an array of strings
 	 */
-	public String[] fixAuthorNamingStructure(String[] authors) {
+	private String[] fixAuthorNamingStructure(String[] authors) {
 		
 		for (int i = 0; i < authors.length; i++) {
 			String name = authors[i];
