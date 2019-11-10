@@ -20,10 +20,11 @@ import org.springframework.stereotype.Service;
 
 import com.kindleparser.parser.dao.interfaces.IDAOOperations;
 import com.kindleparser.parser.entities.Author;
+import com.kindleparser.parser.entities.AuthorToBook;
 import com.kindleparser.parser.entities.Book;
 import com.kindleparser.parser.models.HighlightsDO;
-import com.kindleparser.parser.servicesInterfaces.IHLFormatter;
-import com.kindleparser.parser.servicesInterfaces.IHLParser;
+import com.kindleparser.parser.services.interfaces.IHLFormatter;
+import com.kindleparser.parser.services.interfaces.IHLParser;
 import com.kindleparser.parser.utilities.UtilityOperations;
 
 @Service
@@ -38,7 +39,11 @@ public class HLParserService implements IHLParser {
 	private UtilityOperations utilityOps;
 	private HashMap<String, HighlightsDO> bookHighlightsMap;
 	private HighlightsDO lastBookHighlights;
+	
+	@Autowired
 	private IDAOOperations daoOperations;
+	
+	private final String END_OF_HIGHLIGHT = "==========";
 	
 	
 	/**
@@ -57,14 +62,11 @@ public class HLParserService implements IHLParser {
 		try {
 			in = new Scanner(new FileReader(highlightFile));
 			ingestAllHighlights();
-		//	addHighlightsToDB();
-		//	writeLastHighlightToFile(lastBookHighlights);
-
+			writeLastHighlightToFile(lastBookHighlights);
 		} catch (IOException ex) {
 			log.error("Error occured attempting to read from the highlights file: " + ex);
 			
 		}
-		
 		return bookHighlightsMap;
 	}
 	
@@ -132,6 +134,7 @@ public class HLParserService implements IHLParser {
 			ps.println(lastBookHighlights.getBookTitle());
 			ps.println(lastBookHighlights.getAuthor());
 			ps.println(lastBookHighlights.getBookHighlights());
+			ps.close();
 		} catch(IOException ex) {
 			log.error("Error Writing to last highlight file: " + ex);
 		}
@@ -157,7 +160,7 @@ public class HLParserService implements IHLParser {
 				break;	
 		
 			String nextLine = in.nextLine();
-			if (nextLine.equals("=========="))  {	// end of a highlight is denoted by ==========
+			if (nextLine.equals(END_OF_HIGHLIGHT))  {	// end of a highlight is denoted by ==========
 				break; 
 			} else {
 				highlightContents += nextLine;
@@ -189,18 +192,17 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
-	public boolean addHighlightsToDB() {
-		// TODO:
-		// iterate through the hashmap
-		// add author if not already in the table.
-		// add book if not already in the table
-		// inner loop for going through each highlight and adding it to the table.
+	public boolean addHighlightsToDB(HashMap<String, HighlightsDO> bookHighlightsMap) {
 		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
 			HighlightsDO highlightsDO = entry.getValue();
 			String[] authors = highlightsDO.getAuthor();
 			String bookTitle = highlightsDO.getBookTitle();
 			
 			saveAuthorsToDB(authors);
+			saveBookToDB(authors, bookTitle);
+			Long bookId = daoOperations.getBookId(bookTitle);
+			saveToAuthorsToBookTable(authors, bookId);
+			saveHLContentsToDB(highlightsDO.getBookHighlights(), bookId);
 		}
 
 		return true;
@@ -216,7 +218,7 @@ public class HLParserService implements IHLParser {
 				log.info("Author not currently entered into the DB. Attempting to save author " + authorName + " to DB");
 				Author author = new Author(authorName);
 				daoOperations.saveAuthorToDB(author);
-			//	log.info("Successfully saved author " + authorName + " to DB");
+				log.info("Successfully saved author " + authorName + " to DB");
 			} else {
 				log.info("Failed saving author " + authorName + " to DB. Author already exists in the DB.");
 			}
@@ -227,13 +229,14 @@ public class HLParserService implements IHLParser {
 	
 	
 	private boolean saveBookToDB(String[] authors, String bookTitle) {
+		
 		int numAuthors = authors.length;
 		Long author1;
 		Long author2;
 		Long author3;
 		Book book = null;
 		
-		if (authors == null || authors.length == 0)
+		if (authors == null || authors.length == 0 || daoOperations.doesBookExist(bookTitle))
 			return false;
 		
 		switch(numAuthors) {
@@ -254,9 +257,45 @@ public class HLParserService implements IHLParser {
 				break;
 		}
 		
+		log.info("Authors prior book saving: " + book.getAuthorId1());
+	
 		daoOperations.saveBookToDB(book);
 		return true;
 	}
 	
 	
+	private boolean saveToAuthorsToBookTable(String[] authors, Long bookId) {
+		try {
+			for (String author : authors) {
+				Long authorId = daoOperations.getAuthorID(author);
+				daoOperations.saveAuthorToBookEntry(authorId, bookId);	
+			}
+		} catch (Exception ex) {
+			log.error("Error occured saving entry to authorToBook table with book Id: " + bookId 
+					+ " \nException message: " + ex);
+			return false;
+		}
+		return true;
+	}
+	
+	
+	private boolean saveHLContentsToDB(List<String> highlightContents, Long bookId) {
+		try {
+			for (String contents : highlightContents) {
+				boolean saveSuccess = daoOperations.saveHLToDB(contents, bookId);
+				
+				if (!saveSuccess)  {
+					log.error("Error occured saving highlights to highlight table with book Id: " + bookId);
+					log.error("Highlight contents: " + contents);
+					return false;
+				}
+			}
+			
+		} catch (Exception ex) {
+			log.error("Error occured saving highlights to highlight table with book Id: " + bookId 
+					+ " \nException message: " + ex);
+			return false;
+		}
+		return true;
+	}
 }

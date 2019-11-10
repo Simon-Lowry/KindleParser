@@ -5,17 +5,29 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "Highlights")
 public class Highlight {
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long highlightId;
+	
+	@NotNull
 	private Long bookId;
+	
+	
+	@NotNull
+	@Column(length=4000)
 	private String contents;
 
+	public Highlight (String contents, Long bookId) {
+		this.contents = contents;
+		this.bookId = bookId;
+	}
 	
 	@Column(name = "highlightId", nullable = false)
 	public Long getHighlightId() {

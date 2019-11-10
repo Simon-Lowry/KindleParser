@@ -16,7 +16,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import com.kindleparser.parser.servicesInterfaces.IHLFileCopier;
+
+import com.kindleparser.parser.services.interfaces.IHLFileCopier;
 
 
 @Service

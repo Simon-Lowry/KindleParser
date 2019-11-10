@@ -5,39 +5,37 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "Authors")
-public class Author {
+@Table(name = "AuthorToBook")
+public class AuthorToBook {
+
+	@Id
 	@GeneratedValue(strategy  = GenerationType.IDENTITY)
-    @Id
-	private Long authorId;
-	@NotNull
-	private String authorName;
+	private Long authorToBookId;
 	
-	public Author(String authorName) {
-		this.authorName = authorName;
+	private Long authorId;
+	private Long bookId;
+	
+	public AuthorToBook(Long authorId, Long bookId) {
+		this.authorId = authorId;
+		this.bookId = bookId;
 	}
 	
 	public Long getAuthorId() {
 		return authorId;
 	}
-	
-	
+
 	public void setAuthorId(Long authorId) {
 		this.authorId = authorId;
 	}
-	
-	
-	public String getAuthorName() {
-		return authorName;
+
+	public Long getBookId() {
+		return bookId;
 	}
-	
-	
-	public void setAuthorName(String authorName) {
-		this.authorName = authorName;
+
+	public void setBookId(Long bookId) {
+		this.bookId = bookId;
 	}
-	
 
 }

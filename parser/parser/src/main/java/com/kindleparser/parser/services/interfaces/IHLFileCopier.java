@@ -1,4 +1,4 @@
-package com.kindleparser.parser.servicesInterfaces;
+package com.kindleparser.parser.services.interfaces;
 
 
 /**

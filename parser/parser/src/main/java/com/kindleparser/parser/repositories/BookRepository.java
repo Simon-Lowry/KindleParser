@@ -14,7 +14,11 @@ import com.kindleparser.parser.entities.Book;
 public interface BookRepository extends JpaRepository<Book, Long> {
 	public List<Book> findByAuthorId1(Long authorId);
 	
-	 @Query("SELECT CASE WHEN COUNT(Book) > 0 THEN 'true' ELSE 'false' END FROM Book WHERE bookTitle = ?1")
+	 @Query("SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM Book WHERE book_title = ?1")
 	 public boolean doesBookExist(@Param("bookTitle") String bookTitle);
+	 
+	 
+	 @Query(value = "SELECT book_id FROM Book WHERE book_title = ?1", nativeQuery = true)
+	 public Long getBookId(@Param("bookTitle") String bookTitle);
 	
 }

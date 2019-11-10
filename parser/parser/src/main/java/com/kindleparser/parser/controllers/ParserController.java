@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kindleparser.parser.models.HighlightsDO;
-import com.kindleparser.parser.servicesInterfaces.IHLFormatter;
-import com.kindleparser.parser.servicesInterfaces.IHLParser;
+import com.kindleparser.parser.services.interfaces.IHLFormatter;
+import com.kindleparser.parser.services.interfaces.IHLParser;
 
 @RestController
 @RequestMapping("/parser/")
@@ -31,7 +31,11 @@ public class ParserController {
 		HashMap<String, HighlightsDO> bookHighlightsMap = hlParserService.parseFullHLFile();
 		bookHighlightsMap = hlFormatterService.performHLFormatting(bookHighlightsMap);
 		
+		hlParserService.addHighlightsToDB(bookHighlightsMap);
+		//	writeLastHighlightToFile(lastBookHighlights);
+		
 		log.info("File parsing and formatting has been successful.");
+		
 	}	
 	
 }

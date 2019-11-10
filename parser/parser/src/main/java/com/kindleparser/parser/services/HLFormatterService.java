@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.kindleparser.parser.models.HighlightsDO;
-import com.kindleparser.parser.servicesInterfaces.IHLFormatter;
+import com.kindleparser.parser.services.interfaces.IHLFormatter;
 
 @Service
 public class HLFormatterService implements IHLFormatter {
@@ -44,11 +44,10 @@ public class HLFormatterService implements IHLFormatter {
 			int indexOfOpenBracket = authorAndTitle.indexOf('('); // open bracket precedes the book authors
 			
 			String bookTitle = (indexOfOpenBracket == -1) ?  authorAndTitle : authorAndTitle.substring(0, indexOfOpenBracket - 1);
-		//	log.info("Book title: " + bookTitle);
-				
+			bookTitle = bookTitle.trim();
 			String[] authors = formatAuthors(authorAndTitle, indexOfOpenBracket);
 			
-			highlightsDO.setBookTitle(authorAndTitle);
+			highlightsDO.setBookTitle(bookTitle);
 			highlightsDO.setAuthor(authors);
 		}
 		
@@ -59,9 +58,13 @@ public class HLFormatterService implements IHLFormatter {
 	
 	private String[] formatAuthors(String authorAndTitle, int indexOfOpenBracket) {
 		String[] authors = null;
-		if (indexOfOpenBracket == -1 ) 
-			return null;
 		
+		if (indexOfOpenBracket == -1) {
+			authors = new String[1];
+			authors[0] = "Unknown";
+			return authors;
+		}
+				
 		int indexOfCloseBracket = authorAndTitle.indexOf(')');
 		
 		String authorsPreFormat = authorAndTitle.substring(indexOfOpenBracket + 1, indexOfCloseBracket );
@@ -79,8 +82,7 @@ public class HLFormatterService implements IHLFormatter {
 		} else {
 			authors = new String[1];
 			authors[0] = authorsPreFormat;
-		}
-		
+		}		
 		authors = fixAuthorNamingStructure(authors);
 		log.info("Authors have been extracted and correctly formatted for book");
 		return authors;
@@ -136,7 +138,7 @@ public class HLFormatterService implements IHLFormatter {
 		for (int i = 0; i < authors.length; i++) {
 			String name = authors[i];
 			
-			
+		
 			if (name.contains(",")) {
 				int indexOfComma = name.indexOf(",");
 				String firstName = name.substring(indexOfComma + 2);
@@ -144,6 +146,7 @@ public class HLFormatterService implements IHLFormatter {
 				authors[i] = firstName + " " + lastName;
 				
 			}
+			authors[i] = authors[i].trim();   // ensure preceding or post name white space is removed
 		}
 		log.info("Completed name re-structuring for authors");
 		return authors;

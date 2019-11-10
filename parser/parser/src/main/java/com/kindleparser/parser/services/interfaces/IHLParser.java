@@ -1,4 +1,4 @@
-package com.kindleparser.parser.servicesInterfaces;
+package com.kindleparser.parser.services.interfaces;
 
 import java.util.HashMap;
 
@@ -33,5 +33,8 @@ public interface IHLParser {
 	 * @return  hashmap with the results
 	 */
 	public  HashMap<String, HighlightsDO> parseNewHLsfromHLFile();
+	
+	
+	public boolean addHighlightsToDB(HashMap<String, HighlightsDO> bookHighlightsMap);
 	
 }
