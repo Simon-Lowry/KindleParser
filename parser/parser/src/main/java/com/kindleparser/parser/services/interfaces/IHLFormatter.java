@@ -6,6 +6,6 @@ import com.kindleparser.parser.models.HighlightsDO;
 
 public interface IHLFormatter {
 	
-	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap);
+	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap) throws Exception;
 
 }

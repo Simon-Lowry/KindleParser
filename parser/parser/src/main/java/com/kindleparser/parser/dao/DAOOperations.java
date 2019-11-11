@@ -117,6 +117,9 @@ public class DAOOperations implements IDAOOperations{
 				log.error("Highlight contents: " + contents);
 				return false;
 			}
+		} else {
+			log.info("HL already present in the DB");
+			return false;
 		}
 	 	return true;
 	}

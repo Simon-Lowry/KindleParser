@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.kindleparser.parser.models.HighlightsDO;
 import com.kindleparser.parser.services.interfaces.IHLFormatter;
+import com.kindleparser.parser.utilities.UtilityOperations;
 
 @Service
 public class HLFormatterService implements IHLFormatter {
@@ -18,10 +21,13 @@ public class HLFormatterService implements IHLFormatter {
 	
 	private HashMap<String, HighlightsDO> bookHighlightsMap;
 	
-	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap) {
+	private UtilityOperations utils = new UtilityOperations();
+	
+	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap){
 		this.bookHighlightsMap = bookHighlightsMap;
 		formatHighlights();
 		formatBookTitleAndAuthor();
+		utils.displayAllBookTitles(bookHighlightsMap);
 		return this.bookHighlightsMap;
 	}
 	
@@ -42,9 +48,7 @@ public class HLFormatterService implements IHLFormatter {
 			HighlightsDO highlightsDO = entry.getValue();
 			
 			int indexOfOpenBracket = authorAndTitle.indexOf('('); // open bracket precedes the book authors
-			
-			String bookTitle = (indexOfOpenBracket == -1) ?  authorAndTitle : authorAndTitle.substring(0, indexOfOpenBracket - 1);
-			bookTitle = bookTitle.trim();
+			String bookTitle = formatBookTitle(authorAndTitle, indexOfOpenBracket);
 			String[] authors = formatAuthors(authorAndTitle, indexOfOpenBracket);
 			
 			highlightsDO.setBookTitle(bookTitle);
@@ -53,6 +57,17 @@ public class HLFormatterService implements IHLFormatter {
 		
 		log.info("Book titles and Authors have been formatted in highlight object map");	
 		return true;
+	}
+	
+	
+	private String formatBookTitle(String authorAndBookTitle, int indexOfOpenBracket) {
+		String regex = "[^A-Za-z0-9 _.,!\"'$?@%:-=+ ]*";									
+		String bookTitle = (indexOfOpenBracket == -1) ?  authorAndBookTitle : authorAndBookTitle.substring(0, indexOfOpenBracket - 1);
+		bookTitle = bookTitle.trim();
+		bookTitle = bookTitle.replaceAll(regex, "");
+		log.info("Book title after normalizing data: " + bookTitle );
+		
+		return bookTitle;
 	}
 	
 	
@@ -163,6 +178,7 @@ public class HLFormatterService implements IHLFormatter {
 	 * @return returns true if the formatting was successful.
 	 */
 	private boolean formatHighlights() {
+		String regex = "[^A-Za-z0-9 _.,!\"'$?@%:-=+ ]*";									
 		
 		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
 			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
@@ -172,6 +188,7 @@ public class HLFormatterService implements IHLFormatter {
 				int indexOfColon = highlight.indexOf(":", highlight.indexOf(":") + 1); // gets the index of the second semi colon
 					
 				highlight = highlight.substring(indexOfColon + 3);
+				highlight = highlight.replaceAll(regex, "");
 				bookHighlights.set(i, highlight);
 			}
 		}

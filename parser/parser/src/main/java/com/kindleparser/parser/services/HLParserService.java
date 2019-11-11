@@ -71,6 +71,7 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
+	
 	/**
 	 * Finds the location of the most recent highlight file saved locally from the kindle device.
 	 * This will contain the most recent highlights on the kindle (the remainder are backup files).
@@ -96,10 +97,12 @@ public class HLParserService implements IHLParser {
 	 */
 	private boolean ingestAllHighlights() {
 		HighlightsDO bookHighlights = null;
+		String highlightContents = null;
+		String bookTitleAndAuthor= null;
 		
 		while (in.hasNextLine()) {
-			String bookTitleAndAuthor = in.nextLine();
-			String highlightContents = getHighlightContent();
+			bookTitleAndAuthor = in.nextLine();
+			highlightContents = getHighlightContent();
 			
 			if (bookHighlightsMap.containsKey(bookTitleAndAuthor)) {					// if book already added to the map
 				bookHighlights = bookHighlightsMap.get(bookTitleAndAuthor);
@@ -113,8 +116,10 @@ public class HLParserService implements IHLParser {
 			}
 			
 		}
-		lastBookHighlights = bookHighlights;
-		
+		lastBookHighlights = new HighlightsDO(bookTitleAndAuthor);
+		List<String> lastHLContents = new ArrayList<String>();
+		lastHLContents.add(highlightContents);
+		lastBookHighlights.setBookHighlights(lastHLContents);
 		log.info("Successfully ingested highlights, book titles, and authors from highlight file. Number of highlight objects: " + bookHighlightsMap.size() );
 		in.close();
 		return true;
@@ -132,7 +137,6 @@ public class HLParserService implements IHLParser {
 		try {
 			PrintStream ps = new PrintStream(env.getProperty("local.lastHLFile"));
 			ps.println(lastBookHighlights.getBookTitle());
-			ps.println(lastBookHighlights.getAuthor());
 			ps.println(lastBookHighlights.getBookHighlights());
 			ps.close();
 		} catch(IOException ex) {
@@ -176,7 +180,7 @@ public class HLParserService implements IHLParser {
 		// get last highlight from last highlight file
 		try {
 			in = new Scanner(new FileReader(env.getProperty("local.lastHLFile")));
-		
+		//	writeLastHighlightToFile(lastBookHighlights);
 		} catch(IOException ex) {
 			log.error("Exception occured attempting to read from last highlight file: " + ex);
 		}
@@ -193,6 +197,7 @@ public class HLParserService implements IHLParser {
 	
 	
 	public boolean addHighlightsToDB(HashMap<String, HighlightsDO> bookHighlightsMap) {
+		try {
 		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
 			HighlightsDO highlightsDO = entry.getValue();
 			String[] authors = highlightsDO.getAuthor();
@@ -203,6 +208,10 @@ public class HLParserService implements IHLParser {
 			Long bookId = daoOperations.getBookId(bookTitle);
 			saveToAuthorsToBookTable(authors, bookId);
 			saveHLContentsToDB(highlightsDO.getBookHighlights(), bookId);
+		}
+		
+		} catch(Exception ex) {
+			log.error("BRRRRRRRROKEN");
 		}
 
 		return true;
@@ -228,15 +237,14 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
-	private boolean saveBookToDB(String[] authors, String bookTitle) {
-		
+	private boolean saveBookToDB(String[] authors, String bookTitle) throws Exception {
 		int numAuthors = authors.length;
 		Long author1;
 		Long author2;
 		Long author3;
 		Book book = null;
 		
-		if (authors == null || authors.length == 0 || daoOperations.doesBookExist(bookTitle))
+		if (authors == null || authors.length == 0 || daoOperations.doesBookExist(bookTitle) )
 			return false;
 		
 		switch(numAuthors) {

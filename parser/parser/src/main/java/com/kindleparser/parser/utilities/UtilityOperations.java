@@ -52,14 +52,14 @@ public class UtilityOperations {
 	}
 	
 	
-	public boolean displayAllAuthorsNTitles(HashMap<String, HighlightsDO> highlightsMap) {
+	
+	public boolean displayAllBookTitles(HashMap<String, HighlightsDO> highlightsMap) {
 		
-		
+		log.info("Attempting to display all authors and titles....");
 		for (Map.Entry<String, HighlightsDO> entry : highlightsMap.entrySet()) {
 			HighlightsDO highlight = entry.getValue();
 			
-			log.info("Book title: " + highlight.getAuthor());
-			log.info("Author: " + highlight.getAuthor());
+			log.info("Book title: " + highlight.getBookTitle());
 		}
 		
 		return true;
