@@ -57,7 +57,7 @@ public class ParserController {
 			hlParserService.addHighlightDOsToDB(bookHighlightsMap);
 			log.info("Successfully parsed new highlights from highlight file and submitted to the DB");
 		} catch(Exception ex) {
-			log.error("exception!!");
+			log.error("Exception occured while parsing new highlights from highlight file: " + ex);
 		}	
 	}
 	
