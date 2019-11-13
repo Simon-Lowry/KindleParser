@@ -22,4 +22,6 @@ public interface IDAOOperations {
 	public boolean saveAuthorToBookEntry(Long authorId, Long bookId);
 	
 	public boolean saveHLToDB(String contents, Long bookId);
+	
+	public int getLastHighlightIndex(Long bookId);
 }

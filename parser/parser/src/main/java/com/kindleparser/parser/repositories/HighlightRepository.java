@@ -17,7 +17,10 @@ public interface HighlightRepository extends JpaRepository<Highlight, Long> {
 	
 	@Query(value="SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM Highlights WHERE contents = ?1", nativeQuery = true)
 	public boolean doesHighlightExist(String contents);
-
+	
+		
+	@Query(value="SELECT COUNT(*) FROM Highlights WHERE book_id = ?1", nativeQuery = true)
+	public int getNumHLForBook(Long bookId);
 	
 	// TODO: get all highlights for an author
 	// author id = 1
@@ -26,8 +29,6 @@ public interface HighlightRepository extends JpaRepository<Highlight, Long> {
 	// sql get all book ids for an author
 	// select * from highlighghts
 	
-	
-	// 
 	
 	// TODO: get all highlights for a book
 	

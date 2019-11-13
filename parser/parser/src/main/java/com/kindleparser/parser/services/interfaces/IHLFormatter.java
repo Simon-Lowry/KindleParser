@@ -8,4 +8,5 @@ public interface IHLFormatter {
 	
 	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap) throws Exception;
 
+	public HighlightsDO formatLastHLAfterRetrieval(HighlightsDO lastHighlight);
 }

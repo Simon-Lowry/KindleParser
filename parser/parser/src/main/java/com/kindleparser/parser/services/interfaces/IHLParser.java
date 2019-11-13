@@ -23,6 +23,11 @@ public interface IHLParser {
 	 */
 	public  HashMap<String, HighlightsDO> parseFullHLFile();
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public HighlightsDO getLastHighlight();
 	
 	/**
 	 * <p>
@@ -32,9 +37,9 @@ public interface IHLParser {
 	 * 
 	 * @return  hashmap with the results
 	 */
-	public  HashMap<String, HighlightsDO> parseNewHLsfromHLFile();
+	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile(HighlightsDO lastHighlight);
 	
 	
-	public boolean addHighlightsToDB(HashMap<String, HighlightsDO> bookHighlightsMap);
+	public boolean addHighlightDOsToDB(HashMap<String, HighlightsDO> bookHighlightsMap);
 	
 }

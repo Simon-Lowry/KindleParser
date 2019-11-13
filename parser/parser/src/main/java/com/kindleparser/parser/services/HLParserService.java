@@ -1,6 +1,7 @@
 package com.kindleparser.parser.services;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -29,7 +30,7 @@ import com.kindleparser.parser.utilities.UtilityOperations;
 
 @Service
 public class HLParserService implements IHLParser {
-	private static Logger log = LogManager.getLogger(HLFileCopierService.class.getName());
+	private static Logger log = LogManager.getLogger(HLParserService.class.getName());
 	private Scanner in;
 	
 	@Autowired
@@ -84,7 +85,8 @@ public class HLParserService implements IHLParser {
 		File[] filesInDirectory = HLFileDirectory.listFiles();
 
 		Arrays.sort(filesInDirectory, Comparator.comparingLong(File::lastModified));
-		return filesInDirectory[0].getAbsolutePath();
+		
+		return filesInDirectory[filesInDirectory.length - 1].getAbsolutePath();
 	}
 	
 	
@@ -175,28 +177,72 @@ public class HLParserService implements IHLParser {
 	}
 
 	
-	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile() {
-		//TODO: 
-		// get last highlight from last highlight file
+	public HighlightsDO getLastHighlight() {
+		HighlightsDO lastHighlightDO = null;
 		try {
 			in = new Scanner(new FileReader(env.getProperty("local.lastHLFile")));
-		//	writeLastHighlightToFile(lastBookHighlights);
-		} catch(IOException ex) {
-			log.error("Exception occured attempting to read from last highlight file: " + ex);
-		}
-		
-		// set location of scanner to the last highlight
-		while (in.hasNextLine()) {
+			String bookTitle = in.nextLine();
+			String hlContents = "";
 			
+			while (in.hasNextLine()) {
+				hlContents = in.nextLine();
+			}
+			
+			lastHighlightDO = new HighlightsDO(bookTitle);
+			List<String> bookHighlights = new ArrayList<String>();
+			bookHighlights.add(hlContents);
+			lastHighlightDO.setBookHighlights(bookHighlights);
+			return lastHighlightDO;
+		} catch (FileNotFoundException e) {
+			log.error("Exception occured attempting to read from last highlight file: ");
+			e.printStackTrace();
+			return null;
 		}
-		// use this highlight as a marker to find out where to start taking the new highlights from in the highlight file.
-		// go through the highlight file find the last highlight, start taking from beyond that.
-		// use same code from ingesting the other higlights
-		return null;
 	}
 	
 	
-	public boolean addHighlightsToDB(HashMap<String, HighlightsDO> bookHighlightsMap) {
+	public HighlightsDO getLastHighlight2(){
+		HighlightsDO lastHighlightDO = null;
+		
+		// retrieve from db based on datetime
+		
+		return lastHighlightDO;
+		
+	}
+	
+	
+	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile(HighlightsDO lastHighlight) {
+		int hlCounter = 0;
+		
+		try {
+			String highlightFile = findNewestHLFile();
+			in = new Scanner(new FileReader(highlightFile));
+			String bookTitle = lastHighlight.getBookTitle();
+			
+			Long bookId = daoOperations.getBookId(bookTitle);
+			if (bookId == null) 
+				log.error("book id not found for book with title: " + bookTitle);
+			int lastHighlighIndex = daoOperations.getLastHighlightIndex(bookId);			
+			while (hlCounter <= lastHighlighIndex) {
+				if (in.nextLine().contains(bookTitle)) {
+					hlCounter++;
+				}
+			}
+			
+			while(!in.nextLine().equals(END_OF_HIGHLIGHT));
+			
+			bookHighlightsMap = new HashMap<String, HighlightsDO>();
+			ingestAllHighlights();
+			writeLastHighlightToFile(lastBookHighlights);
+		} catch(IOException ex) {
+			log.error("Exception occured when attempting to read from highlight file: " + ex);
+		}
+		return bookHighlightsMap;
+	}
+	
+	
+	
+	public boolean addHighlightDOsToDB(HashMap<String, HighlightsDO> bookHighlightsMap) {
 		try {
 		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
 			HighlightsDO highlightsDO = entry.getValue();

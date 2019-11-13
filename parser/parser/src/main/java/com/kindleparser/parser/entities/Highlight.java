@@ -1,11 +1,12 @@
 package com.kindleparser.parser.entities;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -18,7 +19,6 @@ public class Highlight {
 	
 	@NotNull
 	private Long bookId;
-	
 	
 	@NotNull
 	@Column(length=4000)

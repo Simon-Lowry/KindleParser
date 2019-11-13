@@ -32,8 +32,8 @@ public class ParserController {
 		
 		try {
 			bookHighlightsMap = hlFormatterService.performHLFormatting(bookHighlightsMap);
+			hlParserService.addHighlightDOsToDB(bookHighlightsMap);
 			
-			hlParserService.addHighlightsToDB(bookHighlightsMap);
 			
 			log.info("File parsing and formatting has been successful.");
 		} catch(Exception ex) {
@@ -44,23 +44,21 @@ public class ParserController {
 	}
 	
 	
-	@GetMapping("newHighlightsParse") 
-	public void newHighlightsParse() {
-		log.info("Attempting to parse Highlight file.....");
-		HashMap<String, HighlightsDO> bookHighlightsMap = hlParserService.parseFullHLFile();
+	@GetMapping("parseNewHighlights") 
+	public void parseNewHLsFromHLFile() {
+		log.info("Attempting to parse new highlights from highlight file.....");
 		
 		try {
-			bookHighlightsMap = hlFormatterService.performHLFormatting(bookHighlightsMap);
 			
-			hlParserService.addHighlightsToDB(bookHighlightsMap);
-			//	writeLastHighlightToFile(lastBookHighlights);
-			
-			log.info("File parsing and formatting has been successful.");
+			HighlightsDO lastHighlight = hlParserService.getLastHighlight();
+			lastHighlight = hlFormatterService.formatLastHLAfterRetrieval(lastHighlight);
+		    HashMap<String, HighlightsDO> bookHighlightsMap = hlParserService.parseNewHLsfromHLFile(lastHighlight); 
+		    bookHighlightsMap = hlFormatterService.performHLFormatting(bookHighlightsMap);
+			hlParserService.addHighlightDOsToDB(bookHighlightsMap);
+			log.info("Successfully parsed new highlights from highlight file and submitted to the DB");
 		} catch(Exception ex) {
 			log.error("exception!!");
-		}
-		
-		
+		}	
 	}
 	
 }

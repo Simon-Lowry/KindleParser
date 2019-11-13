@@ -34,7 +34,6 @@ public class DAOOperations implements IDAOOperations{
 	@Autowired
 	AuthorToBookRepository authorToBookRepo;
 	
-	
 	public Long getAuthorID(String authorName) {
 		return authorRepo.getAuthorId(authorName);
 	}
@@ -44,9 +43,11 @@ public class DAOOperations implements IDAOOperations{
 		return authorRepo.doesAuthorExist(authorName);
 	}
 	
+	
 	public boolean doesAuthorToBookExist(Long authorId, Long bookId) {
 		return authorToBookRepo.existsInAuthorToBookTable(authorId, bookId);
 	}
+	
 	
 	public List<Book> getBooksByAuthorId(Long authorId) {
 		return bookRepo.findByAuthorId1(authorId);
@@ -72,6 +73,10 @@ public class DAOOperations implements IDAOOperations{
 		return highlightRepo.getOne(highlightId);
 	}
 	
+	
+	public int getLastHighlightIndex(Long bookId) {
+		return highlightRepo.getNumHLForBook(bookId);
+	}
 	
 	public boolean saveHighlightToDB(Highlight highlight) {
 		return highlightRepo.save(highlight) != null;

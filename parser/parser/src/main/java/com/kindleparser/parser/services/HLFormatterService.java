@@ -24,12 +24,39 @@ public class HLFormatterService implements IHLFormatter {
 	private UtilityOperations utils = new UtilityOperations();
 	
 	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap){
+		log.info("Beginning formatting....");
 		this.bookHighlightsMap = bookHighlightsMap;
 		formatHighlights();
-		formatBookTitleAndAuthor();
+		formatBookTitlesAndAuthors();
 		utils.displayAllBookTitles(bookHighlightsMap);
 		return this.bookHighlightsMap;
 	}
+	
+	
+	/**
+	 * For adding new highlights to the DB, the last highlight
+	 * is stored in a text file. This file is to be formatted correctly after retrieval
+	 * @param lastHighlight
+	 * @return the last highlight after it's been properly formatted.
+	 */
+	public HighlightsDO formatLastHLAfterRetrieval(HighlightsDO lastHighlight) {
+		String bookTitle = lastHighlight.getBookTitle();
+		log.info("Starting formatting process for last highlight.");
+		int indexOfOpenBracket = bookTitle.indexOf('('); // open bracket precedes the book authors
+		bookTitle = formatBookTitle(bookTitle, indexOfOpenBracket);
+		lastHighlight.setBookTitle(bookTitle);
+		
+		String lastHLContents = lastHighlight.getBookHighlights().get(0);
+		
+		lastHLContents = formatAHighlight(lastHLContents);
+		
+		log.info("Book title after formatting: " + bookTitle);
+		log.info("Highlight after formatting: " + lastHLContents);
+		
+		return lastHighlight;
+
+	}
+	
 	
 	/**
 	 * <p>
@@ -41,8 +68,8 @@ public class HLFormatterService implements IHLFormatter {
 	 * @param highlightsMap - contains all of the highlights including book title and author
 	 * @return true to confirm the action was completed
 	 */
-	private boolean formatBookTitleAndAuthor() {
-		
+	private boolean formatBookTitlesAndAuthors() {
+		log.info("Bgininning book and title formatting");
 		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {	
 			String authorAndTitle = entry.getKey();
 			HighlightsDO highlightsDO = entry.getValue();
@@ -55,12 +82,12 @@ public class HLFormatterService implements IHLFormatter {
 			highlightsDO.setAuthor(authors);
 		}
 		
-		log.info("Book titles and Authors have been formatted in highlight object map");	
+		log.info("Book titles and Authors formatting completed");	
 		return true;
 	}
 	
 	
-	private String formatBookTitle(String authorAndBookTitle, int indexOfOpenBracket) {
+	public String formatBookTitle(String authorAndBookTitle, int indexOfOpenBracket) {
 		String regex = "[^A-Za-z0-9 _.,!\"'$?@%:-=+ ]*";									
 		String bookTitle = (indexOfOpenBracket == -1) ?  authorAndBookTitle : authorAndBookTitle.substring(0, indexOfOpenBracket - 1);
 		bookTitle = bookTitle.trim();
@@ -74,6 +101,7 @@ public class HLFormatterService implements IHLFormatter {
 	private String[] formatAuthors(String authorAndTitle, int indexOfOpenBracket) {
 		String[] authors = null;
 		
+		
 		if (indexOfOpenBracket == -1) {
 			authors = new String[1];
 			authors[0] = "Unknown";
@@ -83,7 +111,6 @@ public class HLFormatterService implements IHLFormatter {
 		int indexOfCloseBracket = authorAndTitle.indexOf(')');
 		
 		String authorsPreFormat = authorAndTitle.substring(indexOfOpenBracket + 1, indexOfCloseBracket );
-		log.info("Authors pre formatting: " + authorsPreFormat);
 		int numCommas = (int) authorsPreFormat.chars().filter(ch -> ch == ',').count();			// commas can be used as separators for multiple authors
 		int numSemiColons = (int) authorsPreFormat.chars().filter(ch -> ch == ';').count();		// semi-colons can be used as seprates for multiple authors
 			
@@ -178,18 +205,14 @@ public class HLFormatterService implements IHLFormatter {
 	 * @return returns true if the formatting was successful.
 	 */
 	private boolean formatHighlights() {
-		String regex = "[^A-Za-z0-9 _.,!\"'$?@%:-=+ ]*";									
-		
+		log.info("Bgininning highlight formatting");
 		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
 			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
 									
 			for (int i = 0; i < bookHighlights.size(); i++) {
-				String highlight = bookHighlights.get(i);
-				int indexOfColon = highlight.indexOf(":", highlight.indexOf(":") + 1); // gets the index of the second semi colon
-					
-				highlight = highlight.substring(indexOfColon + 3);
-				highlight = highlight.replaceAll(regex, "");
-				bookHighlights.set(i, highlight);
+				String hlContents = bookHighlights.get(i);
+				hlContents = formatAHighlight(hlContents);
+				bookHighlights.set(i, hlContents);
 			}
 		}
 		
@@ -198,5 +221,14 @@ public class HLFormatterService implements IHLFormatter {
 		
 	}
 	
+	
+	private String formatAHighlight(String hlContents) {
+		String regex = "[^A-Za-z0-9 _.,!\"'$?@%:-=+ ]*";
+		int indexOfColon = hlContents.indexOf(":", hlContents.indexOf(":") + 1); // gets the index of the second semi colon
+		
+		hlContents = hlContents.substring(indexOfColon + 3);
+		hlContents = hlContents.replaceAll(regex, "");
+		return hlContents;
+	}
 
 }
