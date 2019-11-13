@@ -13,22 +13,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import com.kindleparser.parser.models.HighlightsDO;
+import com.kindleparser.parser.models.BookHLsDO;
 
 @Component
 public class UtilityOperations {
 	private static Logger log = LogManager.getLogger(UtilityOperations.class.getName());
 
-	public void displayNHighlights(HashMap<String, HighlightsDO> bookHLMap, int numHighlights) {
+	public void displayNHighlights(HashMap<String, BookHLsDO> bookHLMap, int numHighlights) {
 		int counter = 0;	
 		
-		for (HighlightsDO bookHighlightsDo : bookHLMap.values()) {
+		for (BookHLsDO bookHighlightsDo : bookHLMap.values()) {
 					
 			log.info(bookHighlightsDo.getBookTitle() + "\n");
 					
 			if (counter < numHighlights) {
 				counter++;
-				List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
+				List<String> bookHighlights = bookHighlightsDo.getListOfHLContents();
 						
 				log.info("Highlights: ");
 				for (int i = 0; i < bookHighlights.size(); i++) {
@@ -39,11 +39,11 @@ public class UtilityOperations {
 	}
 
 	
-	public boolean displaySingleBookHighlights(HighlightsDO bookHighlightsDO) {
+	public boolean displaySingleBookHighlights(BookHLsDO bookHighlightsDO) {
 		log.info("Book title: " + bookHighlightsDO.getBookTitle() + "\n");
 		log.info("Author: " + bookHighlightsDO.getAuthor());
 		
-		List<String> highlights = bookHighlightsDO.getBookHighlights();
+		List<String> highlights = bookHighlightsDO.getListOfHLContents();
 		
 		for (int i = 0; i < highlights.size(); i++ ) {
 			log.info(highlights.get(i) + "\n");
@@ -53,11 +53,11 @@ public class UtilityOperations {
 	
 	
 	
-	public boolean displayAllBookTitles(HashMap<String, HighlightsDO> highlightsMap) {
+	public boolean displayAllBookTitles(HashMap<String, BookHLsDO> highlightsMap) {
 		
 		log.info("Attempting to display all authors and titles....");
-		for (Map.Entry<String, HighlightsDO> entry : highlightsMap.entrySet()) {
-			HighlightsDO highlight = entry.getValue();
+		for (Map.Entry<String, BookHLsDO> entry : highlightsMap.entrySet()) {
+			BookHLsDO highlight = entry.getValue();
 			
 			log.info("Book title: " + highlight.getBookTitle());
 		}

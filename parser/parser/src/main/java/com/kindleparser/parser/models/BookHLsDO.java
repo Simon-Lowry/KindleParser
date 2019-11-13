@@ -3,15 +3,15 @@ package com.kindleparser.parser.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HighlightsDO {
+public class BookHLsDO {
 	private String[] authors;
 	private String bookTitle;
-	private List<String> bookHighlights;
+	private List<String> listOfHLContents;
 	
 	
-	public HighlightsDO (String bookTitle) {
+	public BookHLsDO (String bookTitle) {
 		this.bookTitle = bookTitle;
-		bookHighlights = new ArrayList<String>();
+		listOfHLContents = new ArrayList<String>();
 	}
 
 	
@@ -34,14 +34,12 @@ public class HighlightsDO {
 		this.bookTitle = bookTitle;
 	}
 	
-	
-	public List<String> getBookHighlights() {
-		return bookHighlights;
+	public List<String> getListOfHLContents() {
+		return listOfHLContents;
 	}
-	
-	
-	public void setBookHighlights(List<String> bookHighlights) {
-		this.bookHighlights = bookHighlights;
+
+
+	public void setListOfHLContents(List<String> listOfHLContents) {
+		this.listOfHLContents = listOfHLContents;
 	}
-	
 }

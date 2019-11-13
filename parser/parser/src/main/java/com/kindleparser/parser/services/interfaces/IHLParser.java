@@ -2,7 +2,7 @@ package com.kindleparser.parser.services.interfaces;
 
 import java.util.HashMap;
 
-import com.kindleparser.parser.models.HighlightsDO;
+import com.kindleparser.parser.models.BookHLsDO;
 
 /**
  * <p>
@@ -21,13 +21,13 @@ public interface IHLParser {
 	 * 
 	 * @return hashmap with the results
 	 */
-	public  HashMap<String, HighlightsDO> parseFullHLFile();
+	public  HashMap<String, BookHLsDO> parseFullHLFile();
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public HighlightsDO getLastHighlight();
+	public BookHLsDO getLastHighlight();
 	
 	/**
 	 * <p>
@@ -37,9 +37,9 @@ public interface IHLParser {
 	 * 
 	 * @return  hashmap with the results
 	 */
-	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile(HighlightsDO lastHighlight);
+	public HashMap <String, BookHLsDO> parseNewHLsfromHLFile(BookHLsDO lastHighlight);
 	
 	
-	public boolean addHighlightDOsToDB(HashMap<String, HighlightsDO> bookHighlightsMap);
+	public boolean addHighlightDOsToDB(HashMap<String, BookHLsDO> bookHighlightsMap);
 	
 }

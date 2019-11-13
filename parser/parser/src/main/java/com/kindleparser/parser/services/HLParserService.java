@@ -23,7 +23,7 @@ import com.kindleparser.parser.dao.interfaces.IDAOOperations;
 import com.kindleparser.parser.entities.Author;
 import com.kindleparser.parser.entities.AuthorToBook;
 import com.kindleparser.parser.entities.Book;
-import com.kindleparser.parser.models.HighlightsDO;
+import com.kindleparser.parser.models.BookHLsDO;
 import com.kindleparser.parser.services.interfaces.IHLFormatter;
 import com.kindleparser.parser.services.interfaces.IHLParser;
 import com.kindleparser.parser.utilities.UtilityOperations;
@@ -38,8 +38,8 @@ public class HLParserService implements IHLParser {
 	
 	@Autowired
 	private UtilityOperations utilityOps;
-	private HashMap<String, HighlightsDO> bookHighlightsMap;
-	private HighlightsDO lastBookHighlights;
+	private HashMap<String, BookHLsDO> bookHighlightsMap;
+	private BookHLsDO lastBookHighlights;
 	
 	@Autowired
 	private IDAOOperations daoOperations;
@@ -56,8 +56,8 @@ public class HLParserService implements IHLParser {
 	 * 
 	 * @return true if this parsing was successful.
 	 */
-	public HashMap <String, HighlightsDO> parseFullHLFile() {
-		bookHighlightsMap = new HashMap <String, HighlightsDO>();
+	public HashMap <String, BookHLsDO> parseFullHLFile() {
+		bookHighlightsMap = new HashMap <String, BookHLsDO>();
 		String highlightFile = findNewestHLFile();
 		
 		try {
@@ -98,7 +98,7 @@ public class HLParserService implements IHLParser {
 	 * @return true if highlights were successfully mapped.
 	 */
 	private boolean ingestAllHighlights() {
-		HighlightsDO bookHighlights = null;
+		BookHLsDO bookHighlights = null;
 		String highlightContents = null;
 		String bookTitleAndAuthor= null;
 		
@@ -108,20 +108,20 @@ public class HLParserService implements IHLParser {
 			
 			if (bookHighlightsMap.containsKey(bookTitleAndAuthor)) {					// if book already added to the map
 				bookHighlights = bookHighlightsMap.get(bookTitleAndAuthor);
-				List<String> highlights = bookHighlights.getBookHighlights();
+				List<String> highlights = bookHighlights.getListOfHLContents();
 				highlights.add(highlightContents);
 			} else {
-			    bookHighlights = new HighlightsDO(bookTitleAndAuthor);
-				List<String> highlights = bookHighlights.getBookHighlights();
+			    bookHighlights = new BookHLsDO(bookTitleAndAuthor);
+				List<String> highlights = bookHighlights.getListOfHLContents();
 				highlights.add(highlightContents);
 				bookHighlightsMap.put(bookTitleAndAuthor, bookHighlights);
 			}
 			
 		}
-		lastBookHighlights = new HighlightsDO(bookTitleAndAuthor);
+		lastBookHighlights = new BookHLsDO(bookTitleAndAuthor);
 		List<String> lastHLContents = new ArrayList<String>();
 		lastHLContents.add(highlightContents);
-		lastBookHighlights.setBookHighlights(lastHLContents);
+		lastBookHighlights.setListOfHLContents(lastHLContents);
 		log.info("Successfully ingested highlights, book titles, and authors from highlight file. Number of highlight objects: " + bookHighlightsMap.size() );
 		in.close();
 		return true;
@@ -135,11 +135,11 @@ public class HLParserService implements IHLParser {
 	 * </p>
 	 * @return - String - returns a single highlight's contents as a string.
 	 */
-	private boolean writeLastHighlightToFile(HighlightsDO lastHighlight) {
+	private boolean writeLastHighlightToFile(BookHLsDO lastHighlight) {
 		try {
 			PrintStream ps = new PrintStream(env.getProperty("local.lastHLFile"));
 			ps.println(lastBookHighlights.getBookTitle());
-			ps.println(lastBookHighlights.getBookHighlights());
+			ps.println(lastBookHighlights.getListOfHLContents());
 			ps.close();
 		} catch(IOException ex) {
 			log.error("Error Writing to last highlight file: " + ex);
@@ -177,8 +177,8 @@ public class HLParserService implements IHLParser {
 	}
 
 	
-	public HighlightsDO getLastHighlight() {
-		HighlightsDO lastHighlightDO = null;
+	public BookHLsDO getLastHighlight() {
+		BookHLsDO lastHighlightDO = null;
 		try {
 			in = new Scanner(new FileReader(env.getProperty("local.lastHLFile")));
 			String bookTitle = in.nextLine();
@@ -188,10 +188,10 @@ public class HLParserService implements IHLParser {
 				hlContents = in.nextLine();
 			}
 			
-			lastHighlightDO = new HighlightsDO(bookTitle);
+			lastHighlightDO = new BookHLsDO(bookTitle);
 			List<String> bookHighlights = new ArrayList<String>();
 			bookHighlights.add(hlContents);
-			lastHighlightDO.setBookHighlights(bookHighlights);
+			lastHighlightDO.setListOfHLContents(bookHighlights);
 			return lastHighlightDO;
 		} catch (FileNotFoundException e) {
 			log.error("Exception occured attempting to read from last highlight file: ");
@@ -201,8 +201,8 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
-	public HighlightsDO getLastHighlight2(){
-		HighlightsDO lastHighlightDO = null;
+	public BookHLsDO getLastHighlight2(){
+		BookHLsDO lastHighlightDO = null;
 		
 		// retrieve from db based on datetime
 		
@@ -211,7 +211,7 @@ public class HLParserService implements IHLParser {
 	}
 	
 	
-	public HashMap <String, HighlightsDO> parseNewHLsfromHLFile(HighlightsDO lastHighlight) {
+	public HashMap <String, BookHLsDO> parseNewHLsfromHLFile(BookHLsDO lastHighlight) {
 		int hlCounter = 0;
 		
 		try {
@@ -231,7 +231,7 @@ public class HLParserService implements IHLParser {
 			
 			while(!in.nextLine().equals(END_OF_HIGHLIGHT));
 			
-			bookHighlightsMap = new HashMap<String, HighlightsDO>();
+			bookHighlightsMap = new HashMap<String, BookHLsDO>();
 			ingestAllHighlights();
 			writeLastHighlightToFile(lastBookHighlights);
 		} catch(IOException ex) {
@@ -242,10 +242,10 @@ public class HLParserService implements IHLParser {
 	
 	
 	
-	public boolean addHighlightDOsToDB(HashMap<String, HighlightsDO> bookHighlightsMap) {
+	public boolean addHighlightDOsToDB(HashMap<String, BookHLsDO> bookHighlightsMap) {
 		try {
-		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {
-			HighlightsDO highlightsDO = entry.getValue();
+		for (Map.Entry<String, BookHLsDO> entry : bookHighlightsMap.entrySet()) {
+			BookHLsDO highlightsDO = entry.getValue();
 			String[] authors = highlightsDO.getAuthor();
 			String bookTitle = highlightsDO.getBookTitle();
 			
@@ -253,7 +253,7 @@ public class HLParserService implements IHLParser {
 			saveBookToDB(authors, bookTitle);
 			Long bookId = daoOperations.getBookId(bookTitle);
 			saveToAuthorsToBookTable(authors, bookId);
-			saveHLContentsToDB(highlightsDO.getBookHighlights(), bookId);
+			saveHLContentsToDB(highlightsDO.getListOfHLContents(), bookId);
 		}
 		
 		} catch(Exception ex) {

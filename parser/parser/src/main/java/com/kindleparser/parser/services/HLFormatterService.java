@@ -11,7 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.kindleparser.parser.models.HighlightsDO;
+import com.kindleparser.parser.models.BookHLsDO;
 import com.kindleparser.parser.services.interfaces.IHLFormatter;
 import com.kindleparser.parser.utilities.UtilityOperations;
 
@@ -19,11 +19,11 @@ import com.kindleparser.parser.utilities.UtilityOperations;
 public class HLFormatterService implements IHLFormatter {
 	private static Logger log = LogManager.getLogger(HLFormatterService.class.getName());
 	
-	private HashMap<String, HighlightsDO> bookHighlightsMap;
+	private HashMap<String, BookHLsDO> bookHighlightsMap;
 	
 	private UtilityOperations utils = new UtilityOperations();
 	
-	public HashMap<String, HighlightsDO> performHLFormatting(HashMap<String, HighlightsDO> bookHighlightsMap){
+	public HashMap<String, BookHLsDO> performHLFormatting(HashMap<String, BookHLsDO> bookHighlightsMap){
 		log.info("Beginning formatting....");
 		this.bookHighlightsMap = bookHighlightsMap;
 		formatHighlights();
@@ -39,14 +39,14 @@ public class HLFormatterService implements IHLFormatter {
 	 * @param lastHighlight
 	 * @return the last highlight after it's been properly formatted.
 	 */
-	public HighlightsDO formatLastHLAfterRetrieval(HighlightsDO lastHighlight) {
+	public BookHLsDO formatLastHLAfterRetrieval(BookHLsDO lastHighlight) {
 		String bookTitle = lastHighlight.getBookTitle();
 		log.info("Starting formatting process for last highlight.");
 		int indexOfOpenBracket = bookTitle.indexOf('('); // open bracket precedes the book authors
 		bookTitle = formatBookTitle(bookTitle, indexOfOpenBracket);
 		lastHighlight.setBookTitle(bookTitle);
 		
-		String lastHLContents = lastHighlight.getBookHighlights().get(0);
+		String lastHLContents = lastHighlight.getListOfHLContents().get(0);
 		
 		lastHLContents = formatAHighlight(lastHLContents);
 		
@@ -70,9 +70,9 @@ public class HLFormatterService implements IHLFormatter {
 	 */
 	private boolean formatBookTitlesAndAuthors() {
 		log.info("Bgininning book and title formatting");
-		for (Map.Entry<String, HighlightsDO> entry : bookHighlightsMap.entrySet()) {	
+		for (Map.Entry<String, BookHLsDO> entry : bookHighlightsMap.entrySet()) {	
 			String authorAndTitle = entry.getKey();
-			HighlightsDO highlightsDO = entry.getValue();
+			BookHLsDO highlightsDO = entry.getValue();
 			
 			int indexOfOpenBracket = authorAndTitle.indexOf('('); // open bracket precedes the book authors
 			String bookTitle = formatBookTitle(authorAndTitle, indexOfOpenBracket);
@@ -206,8 +206,8 @@ public class HLFormatterService implements IHLFormatter {
 	 */
 	private boolean formatHighlights() {
 		log.info("Bgininning highlight formatting");
-		for (HighlightsDO bookHighlightsDo : bookHighlightsMap.values()) {	
-			List<String> bookHighlights = bookHighlightsDo.getBookHighlights();
+		for (BookHLsDO bookHighlightsDo : bookHighlightsMap.values()) {	
+			List<String> bookHighlights = bookHighlightsDo.getListOfHLContents();
 									
 			for (int i = 0; i < bookHighlights.size(); i++) {
 				String hlContents = bookHighlights.get(i);
